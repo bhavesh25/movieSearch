@@ -1,0 +1,16 @@
+.imageCls {
+    width: 160px;
+    height: 145px;
+    overflow: hidden;
+    border: 1px solid black;
+  }
+  
+  div img {
+      width: 100%;
+      min-height: 100%;
+  }
+  .backgroundInverse {
+    position: fixed;
+    background-color: #16325c;
+    height: 80px; 
+}

@@ -1,0 +1,165 @@
+<template>
+    <template if:true={showSpinner}>
+        <div class="demo-only demo-only demo-only_viewport demo--inverse" style="height:6rem">
+        <div class="slds-spinner_container slds-is-fixed">
+        <div role="status" class="slds-spinner slds-spinner_medium slds-spinner_brand">
+        <span class="slds-assistive-text">Loading</span>
+        <div class="slds-spinner__dot-a"></div>
+        <div class="slds-spinner__dot-b"></div>
+        </div>
+        </div>
+        </div>
+    </template>
+      
+    <!--header to display page details-->
+    <lightning-card>
+        <lightning-layout multiple-rows>
+            
+            <lightning-layout-item padding="around-medium" size="12" small-device-size="2" medium-device-size="2" large-device-size="2">
+                <div class="slds-p-left_medium slds-text-title_caps slds-text-heading_medium" data-id="header"> {headerText}</div>
+            </lightning-layout-item>
+        </lightning-layout>
+
+        
+        
+    </lightning-card>
+    
+
+    <lightning-card>
+        
+    <!--first search screen-->
+    <template if:true={firstScreen}>
+        <lightning-layout multiple-rows>
+            <lightning-layout-item padding="around-medium" size="12" small-device-size="6" medium-device-size="6" large-device-size="6">
+                <span onkeypress={onkeyupMethod}>
+                    <lightning-input type="text" variant="label-hidden" data-id="movieSearch"  placeholder="Search Movie with  (Type atleast 3 characters)…" onchange={validateSearchString}></lightning-input>
+                </span>
+            </lightning-layout-item>
+            <lightning-layout-item padding="around-medium" size="12" small-device-size="6" medium-device-size="6" large-device-size="6">
+                <lightning-button  label="Search"  onclick={searchMovie}  disabled={disableSearchButton}></lightning-button>
+            </lightning-layout-item>
+        </lightning-layout>
+        <template if:true={showError}>
+            <span class="slds-p-left_medium">{firstScreenErrorMsg}</span>
+        </template>
+    </template>
+
+    <!--second search to display movies list-->
+    <template if:true={secondScreen}>
+        <p class="slds-m-around_medium slds-text-heading_xsmall">Select a movie and click Next to go to the next page.</p>
+        <fieldset class="slds-form-element">
+            <div class="slds-form-element__control">
+                <lightning-layout multiple-rows>
+                    <template for:each={moviesForUI} for:item="mov"> 
+                        <lightning-layout-item key={mov.Title} padding="around-small" size="12" small-device-size="4" medium-device-size="4" large-device-size="4" class="slds-align_absolute-center">
+                            
+                            <span class="slds-radio " >
+                                <input  type="radio" onchange={movieSelectEvent}  name="movie" id={mov.Title} value={mov.Title} data-value={mov.Title}/>
+
+                                <label class="slds-radio__label" for={mov.Title}>
+                                <span class="slds-radio_faux"></span>
+                                <span class="slds-form-element__label"></span>
+                                </label>
+                                <span class="slds-text-font_monospace slds-text-title">{mov.Title}</span>
+                                <div><p>Genre: {mov.Genre}</p>
+                                <p>Year: {mov.Year}</p></div>
+                                <BR/>
+                                <div class="imageCls slds-align_absolute-center"><img src={mov.Poster} key={mov.Title} ></div>
+                            </span>
+                        </lightning-layout-item> 
+                        
+                    </template>   
+                </lightning-layout>
+            </div>
+        </fieldset>
+
+            <div class="slds-align_absolute-center">
+                    <lightning-button-icon disabled={disablePrev} icon-name="utility:chevronleft" variant="brand" alternative-text="Previous" title="Previous" class="slds-p-around_medium" onclick={showPrevImages}></lightning-button-icon>
+                    <lightning-button-icon disabled={disableNext} icon-name="utility:chevronright" variant="brand" alternative-text="Next" title="Next" class="slds-p-around_medium" onclick={showNextImages}></lightning-button-icon>
+            </div>
+        
+
+
+        <template if:true={showNext2}>
+            <div class="slds-align_absolute-center">
+                <lightning-button  label="Next"  onclick={showThirdScreen}  ></lightning-button>
+            </div>
+        </template>
+    </template>
+
+    <!--third user info screen-->
+    <template if:true={thirdScreen}>
+        <p class="slds-m-around_medium slds-text-heading_xsmall">Fill in all the details and click Next to go to the Next page.</p>
+        <lightning-layout multiple-rows>
+            <lightning-layout-item padding="around-small" size="12" small-device-size="6" medium-device-size="6" large-device-size="6" >
+              <p><lightning-input type="text" label = "Name" data-id="username" required onchange={validateUserInfo}></lightning-input> </p>
+            </lightning-layout-item>
+            <lightning-layout-item padding="around-small" size="12" small-device-size="6" medium-device-size="6" large-device-size="6" >
+                <p><lightning-input type="email" label = "Email" data-id="useremail" required onchange={validateUserInfo}></lightning-input></p>
+            </lightning-layout-item>
+            <lightning-layout-item padding="around-small" size="12" small-device-size="6" medium-device-size="6" large-device-size="6" >
+                <p><lightning-input type="tel" label = "Mobile Number" data-id="userphone" required pattern="[0-9]{10}" onchange={validateUserInfo} message-when-pattern-mismatch="Format not correct. Please enter 10 Digit numbers."></lightning-input></p>
+              </lightning-layout-item>
+              <lightning-layout-item padding="around-small" size="12" small-device-size="6" medium-device-size="6" large-device-size="6" >
+                  <p><lightning-input type="date" label = "Movie Watch Date" data-id="moviedate" required onchange={validateUserInfo}></lightning-input></p>
+              </lightning-layout-item>
+              
+        </lightning-layout>
+        <template if:true={showNext3}>
+            <div class="slds-align_absolute-center">
+                <lightning-button  label="Next"  onclick={showFourthScreen}   ></lightning-button>
+            </div>
+        </template>
+   </template>
+        
+   <!--fourth screen to get feedback from users-->
+    <template if:true={fourthScreen}>
+        <p class="slds-m-around_medium slds-text-heading_xsmall">Provide Rating, Feedback and click Submit to book the ticket.</p>
+        <lightning-layout multiple-rows>
+            <lightning-layout-item padding="around-small" size="12" small-device-size="6" medium-device-size="6" large-device-size="6" >
+              <p> <lightning-slider label="Rate your experience"  data-id="rating" onchange={updateRating} size="10" step="1" min ="0" max="10" value="5"></lightning-slider></p>
+              
+            </lightning-layout-item>
+            <lightning-layout-item padding="around-small" size="12" small-device-size="6" medium-device-size="6" large-device-size="6" >
+                <p><lightning-input-rich-text label-visible label="Feedback" data-id="feedback" onchange={updateFeedback} placeholder="Please enter feedback." required></lightning-input-rich-text></p>
+            </lightning-layout-item>
+        </lightning-layout>
+        <template if:true={showNext4}>
+            <div class="slds-align_absolute-center">
+                <lightning-button  label="Submit"  onclick={submitData} disabled={disableSubmit}></lightning-button>
+            </div>
+        </template>
+        
+    </template>
+
+    <!--Final screen to display confirmation to user.-->
+    <template if:true={finalScreen} >
+        <lightning-card>
+            <lightning-layout multiple-rows>
+                <lightning-layout-item padding="around-medium" size="12" small-device-size="12" medium-device-size="12" large-device-size="12">
+                    <div class="slds-align_absolute-center">
+                        <div class="slds-p-left_medium slds-text-title_caps slds-text-heading_medium">{submitDataMsg} </div>
+                    </div>
+                </lightning-layout-item>
+                <lightning-layout-item padding="around-medium" size="12" small-device-size="12" medium-device-size="12" large-device-size="12">
+                    <div class="slds-align_absolute-center">
+                        <lightning-button  label="Go back to Home"  onclick={resetValues} ></lightning-button>
+                    </div>
+                </lightning-layout-item>
+            </lightning-layout>
+
+           
+        </lightning-card>
+        
+    </template>
+    <!--Go back to home link at the bottom of the page.-->
+    <template if:true={showBackLink}>
+            <div class="slds-align_absolute-center slds-m-around_medium" >
+                <a href="#" onclick={resetValues} ><div class="slds-text-link_reset" data-id="Home" >
+                    <lightning-icon  icon-name="utility:back" size="xx-small" variant="brand" alternative-text="Home" title="Home"  ></lightning-icon> Go back to Home
+                </div></a>
+            </div>
+    </template>
+    
+</lightning-card>
+</template>

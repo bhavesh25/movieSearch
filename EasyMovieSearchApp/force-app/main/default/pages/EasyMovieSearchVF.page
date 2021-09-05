@@ -1,0 +1,16 @@
+<apex:page showHeader="false" sidebar="false">
+    <apex:includeLightning />    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <div id="LightningComponentid" />    
+    <script>
+    $Lightning.use("c:EasyMovieSearchApp", function() {
+        $Lightning.createComponent("c:easySearchMovie",
+          { 
+          },
+          "LightningComponentid",
+          function(cmp) {
+             console.log('LWC Componenet added in VF page');
+          });
+    });
+    </script>
+</apex:page>
