@@ -4,48 +4,56 @@ import saveMovieDetailsMethod from '@salesforce/apex/EasyMovieSearchController.s
 
 export default class EasySearchMovie extends LightningElement {
     //variables for screens
-    @track firstScreen;
-    @track secondScreen;
-    @track thirdScreen;
-    @track fourthScreen;
+    firstScreen;
+    secondScreen;
+    thirdScreen;
+    fourthScreen;
     //button show hide 
-    @track showNext2;
-    @track showNext3;
-    @track showNext4;
-    @track disableSearchButton;
-    @track disableSubmit;
-    @track showBackLink;
-    @track firstScreenErrorMsg;
+    showNext2;
+    showNext3;
+    showNext4;
+    disableSearchButton;
+    disableSubmit;
+    showBackLink;
+    firstScreenErrorMsg;
     
     //for pagination
-    matchedMovies;
-    @track moviesForUI;
-    currentCount;
+    moviesForUI;
     totalCount;
-    @track disablePrev;
-    @track disableNext;
+    disablePrev;
+    disableNext;
     
     movieSelected;
     searchString;
-    @track showError;
-    @track finalScreen;
-    @track submitDataMsg;
+    showError;
+    finalScreen;
+    submitDataMsg;
     //user input variables
     custName;
     custEmail;
     custPhone;
     moviedate;
-    apiResponse;
     ratingValue;
     feedback;
+
+    pagetotal;
+    page;
+    actualPageTotal;
+    allMovies;
+    pointer;
+    apiPage;
+    modVal;
+    responseTotal;
     
-    @track showSpinner;
+    
+    showSpinner;
 
     connectedCallback(){
         this.resetInitialValues();
         
     };
     renderedCallback(){
+        
         if(this.firstScreen || this.finalScreen){
             this.showBackLink = false;
         } else{
@@ -73,7 +81,14 @@ export default class EasySearchMovie extends LightningElement {
         this.showBackLink = false;
         this.showError = false;
         this.firstScreenErrorMsg = '';
-        this.apiResponse = [];
+        this.page = 1;
+        this.pagetotal = 0;
+        this.actualPageTotal = 0;
+        this.allMovies = new Array();
+        this.pointer = 0;
+        this.apiPage = 0;
+        this.modVal = 0;
+        this.responseTotal = 0;
     }
 
     //this method validate the search string, 
@@ -95,93 +110,64 @@ export default class EasySearchMovie extends LightningElement {
         
     };
 
-    //calling apex method to hit the api and get response, if response is already present then skip the api call.
+    //calling apex method to hit the api and get response
     searchMovie(){
         this.showSpinner = true;
+        this.moviesForUI = new Array();
         this.disableSearchButton = true;
-        //if api is called once, then response is already saved in the js.
-        //no need to call the api again.
-        if(this.apiResponse && this.apiResponse.length>0){
-            this.searchKeywordFromMovies();
-            this.showSpinner = false;
-        } else {
-            searchMoviesApexMethod()
-          .then((result)=>{
-            
-            if(result){
-                
-                if(JSON.parse(result).length )
-                    this.apiResponse = JSON.parse(result);
-                else    
-                    this.apiResponse.push(JSON.parse(result));
-                
-                console.log('api:'+this.apiResponse);
-                this.searchKeywordFromMovies();
-                this.showSpinner = false;
-            } else {
-                this.showError = true;
-                this.firstScreenErrorMsg = 'No movie found.'
-                this.showSpinner = false;
-            }
-          })
-          .catch((error)=>{
-            this.showError = true;
-            this.showSpinner = false;
-            this.firstScreenErrorMsg = 'Something went wrong, please try again later.'
-            console.log(error)
-          })
-        }
+        this.apiPage = this.apiPage + 1;
+        searchMoviesApexMethod({title:this.searchString,page:this.apiPage})
+                .then((result)=>{
+                        let response = JSON.parse(result);
+                        if(response.Response === "True"){
+                            this.responseTotal = parseInt(response.totalResults);
+                            this.modVal = (response.totalResults%9)
+                            if(response.totalResults > 9)
+                                this.pagetotal = Math.ceil((response.totalResults)/9);
+                            else
+                                this.pagetotal = 1
+                            if(response.totalResults > 10)
+                            this.actualPageTotal = Math.ceil((response.totalResults)/10);
+                            else
+                                this.actualPageTotal = 1;
+                            
+                            this.allMovies = this.allMovies.concat(response.Search);
+                            this.moviesForUI = this.allMovies.slice(this.pointer,this.pointer+9);
+                            
+                            if(this.apiPage === this.actualPageTotal){
+                                this.pointer = this.pointer + this.modVal;
+                            } else {
+                                this.pointer = this.pointer + 9;
+                            }
+                            this.headerText = 'Movies list';
+                            this.firstScreen = false;
+                            this.secondScreen = true;
+                            this.showError = false;
+                            this.firstScreenErrorMsg = '';
+                            this.handleScrollToTop();
+                            this.handleButtons();
+                        } else{
+                            this.showError = true;
+                            this.firstScreenErrorMsg = response.Error;
+                        }
+                        this.showSpinner = false;
+                        
+                    
+                })
+                .catch((error)=>{
+                    this.showError = true;
+                    this.showSpinner = false;
+                    this.firstScreenErrorMsg = 'Something went wrong, please try again later.'
+                    console.log(error)
+                })
+        
+        
+        
         
         
     };
 
-    //reusabel method to find movies from the response using keyword
-    searchKeywordFromMovies(){
-        this.matchedMovies = [];
-        for(var i=0; i<this.apiResponse.length; i++) {
-            for(let key in this.apiResponse[i]) {
-                if(Array.isArray(this.apiResponse[i][key])){
-                    for(var j=0; j<this.apiResponse[i][key].length; j++) {
-                        for(let key1 in this.apiResponse[i][key][j]){
-                            if(this.apiResponse[i][key][j][key1].toLowerCase().indexOf(this.searchString.toLowerCase())!=-1) {
-                                this.matchedMovies.push(this.apiResponse[i]);
-                                break;
-                            }
-                        }
-                    }
-                }
-                else if(this.apiResponse[i][key].toLowerCase().indexOf(this.searchString.toLowerCase())!=-1) {
-                    this.matchedMovies.push(this.apiResponse[i]);
-                    break;
-                }
-            }
-        }
-        //Handling 3X3 grid view
-        if(this.matchedMovies.length > 0){
-            this.totalCount = this.matchedMovies.length;
-            if(this.totalCount > 9){
-                this.moviesForUI = this.matchedMovies.slice(0,9);
-                this.currentCount = 9;
-                this.disablePrev = true;
-                this.disableNext = false;
-                
-            } else {
-                this.moviesForUI = this.matchedMovies;
-                this.disablePrev = true;
-                this.disableNext = true;
-            }
-            this.headerText = 'Movies list';
-            this.firstScreen = false;
-            this.secondScreen = true;
-            this.showError = false;
-            this.firstScreenErrorMsg = '';
-            this.handleScrollToTop();
-            
-        } else {
-            this.showError = true;
-            this.firstScreenErrorMsg = 'No movie found.'
-        }
-    };
+  
 
     //called when movie is selected via radio button
     movieSelectEvent(event){
@@ -317,57 +303,66 @@ export default class EasySearchMovie extends LightningElement {
     //Pagination Next button function.
     showNextImages(){
         this.resetNext2Button();
+        this.page = this.page + 1;
         
-        if(this.totalCount > this.currentCount+9){
-                
-                this.moviesForUI = this.matchedMovies.slice(this.currentCount,this.currentCount+9);
-                this.currentCount = this.currentCount+9;
-                
+        if(this.allMovies.length - this.pointer >= 9 || this.allMovies.length === this.responseTotal){
+            this.showSpinner = true;
+            this.moviesForUI = [];
+            this.moviesForUI = this.allMovies.slice(this.pointer,this.pointer+9);
+            if(this.allMovies.length === this.responseTotal && this.modVal > 0 ){
+                this.pointer = this.pointer + this.modVal;
+            } else {
+                this.pointer = this.pointer + 9;
+            }
+            
+            this.showSpinner = false;
+            
         } else {
-            this.moviesForUI = this.matchedMovies.slice(this.currentCount,this.totalCount);
-            this.currentCount = this.totalCount;
+            this.searchMovie();
         }
-        this.showHideImageButtons();
         this.handleScrollToTop();
+        this.handleButtons();
+                
+        
     };
 
     //Pagination Prev button function.
     showPrevImages(){
+        this.showSpinner = true;
         this.resetNext2Button();
-        if(this.currentCount === this.totalCount){
-            if(this.currentCount % 9 === 0){
-                this.currentCount = this.currentCount - 9;
-            } else {
-                this.currentCount = this.currentCount- (this.currentCount % 9);
-            }
-
-            this.moviesForUI = this.matchedMovies.slice(this.currentCount-9,this.currentCount );
+        this.page = this.page -  1;
+        if(this.allMovies.length === this.responseTotal && this.modVal > 0){
+            this.pointer = this.pointer - this.modVal;
+        } else {
+            this.pointer = this.pointer - 9;
         }
-        else {
-            this.currentCount = this.currentCount-9;
-            this.moviesForUI = this.matchedMovies.slice(this.currentCount-9,this.currentCount );
-        } 
-        this.showHideImageButtons();
+        this.moviesForUI = [];
+        this.moviesForUI = this.allMovies.slice((this.pointer-9),this.pointer);
+        
+        this.handleButtons();
+        
+        
         this.handleScrollToTop();
+        this.showSpinner = false;
     };
 
     resetNext2Button(){
         this.movieSelected = '';
         this.showNext2 = false;
     };
-
-    //check when to enable or disable the 
-    showHideImageButtons(){
-        if(this.currentCount-9 > 0){
+    handleButtons(){
+        if(this.page > 1){
             this.disablePrev = false;
         } else {
             this.disablePrev = true;
         }
-        if(this.currentCount < this.totalCount){
+        if(this.page < this.pagetotal){
             this.disableNext = false;
         } else {
             this.disableNext = true;
         }
-    }
+        
+    };
+    
 
 }

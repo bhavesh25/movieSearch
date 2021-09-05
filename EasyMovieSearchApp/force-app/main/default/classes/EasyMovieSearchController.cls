@@ -4,11 +4,13 @@ public with sharing class EasyMovieSearchController {
     }
     //Method to hit the api and get the response.
     @AuraEnabled
-    public static string getMovieDetails(){
+    public static string getMovieDetails(String title,String page){
         try {
+            if(title.indexOf(' ') > -1)
+                title = title.replaceAll( ' ', '+');
             Http h = new Http();
             HttpRequest req = new HttpRequest();
-            req.setEndpoint('http://www.omdbapi.com/?i=tt3896198&apikey=16eed46f');
+            req.setEndpoint('http://www.omdbapi.com/?s='+title+'&apikey=16eed46f&type=movie&page='+page);
             //req.setEndpoint('https://run.mocky.io/v3/56fa7920-c21c-423a-9d1d-ccd96383040e');//for testing purpose.
             //req.setEndpoint('https://run.mocky.io/v3/2b1a22c4-bde4-45a2-8bb6-5264ae7100c2');//empty response.
             req.setMethod('GET');

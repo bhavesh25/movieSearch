@@ -37,24 +37,25 @@
     <!--second search to display movies list-->
     <template if:true={secondScreen}>
         <p class="slds-m-around_medium slds-text-heading_xsmall">Select a movie and click Next to go to the next page.</p>
+        <template if:true={moviesForUI}>
         <fieldset class="slds-form-element">
             <div class="slds-form-element__control">
                 <lightning-layout multiple-rows>
                     <template for:each={moviesForUI} for:item="mov"> 
-                        <lightning-layout-item key={mov.Title} padding="around-small" size="12" small-device-size="4" medium-device-size="4" large-device-size="4" class="slds-align_absolute-center">
+                        <lightning-layout-item key={mov.imdbID} padding="around-small" size="12" small-device-size="4" medium-device-size="4" large-device-size="4" class="slds-align_absolute-center">
                             
                             <span class="slds-radio " >
-                                <input  type="radio" onchange={movieSelectEvent}  name="movie" id={mov.Title} value={mov.Title} data-value={mov.Title}/>
+                                <input  type="radio" onchange={movieSelectEvent}  name="movie" id={mov.imdbID} value={mov.Title} data-value={mov.Title}/>
 
-                                <label class="slds-radio__label" for={mov.Title}>
+                                <label class="slds-radio__label" for={mov.imdbID}>
                                 <span class="slds-radio_faux"></span>
                                 <span class="slds-form-element__label"></span>
                                 </label>
                                 <span class="slds-text-font_monospace slds-text-title">{mov.Title}</span>
-                                <div><p>Genre: {mov.Genre}</p>
                                 <p>Year: {mov.Year}</p></div>
                                 <BR/>
-                                <div class="imageCls slds-align_absolute-center"><img src={mov.Poster} key={mov.Title} ></div>
+                                    <div class="imageCls slds-align_absolute-center"><img src={mov.Poster} key={mov.imdbID} ></div>
+
                             </span>
                         </lightning-layout-item> 
                         
@@ -62,11 +63,17 @@
                 </lightning-layout>
             </div>
         </fieldset>
-
+    </template>
             <div class="slds-align_absolute-center">
                     <lightning-button-icon disabled={disablePrev} icon-name="utility:chevronleft" variant="brand" alternative-text="Previous" title="Previous" class="slds-p-around_medium" onclick={showPrevImages}></lightning-button-icon>
                     <lightning-button-icon disabled={disableNext} icon-name="utility:chevronright" variant="brand" alternative-text="Next" title="Next" class="slds-p-around_medium" onclick={showNextImages}></lightning-button-icon>
+            
             </div>
+            
+            <div class="slds-align_absolute-center">
+                <p>Page {page} of {pagetotal}.</p>
+            </div>
+        </BR>
         
 
 
