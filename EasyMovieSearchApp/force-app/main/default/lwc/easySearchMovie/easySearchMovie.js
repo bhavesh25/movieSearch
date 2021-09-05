@@ -134,11 +134,12 @@ export default class EasySearchMovie extends LightningElement {
                             this.allMovies = this.allMovies.concat(response.Search);
                             this.moviesForUI = this.allMovies.slice(this.pointer,this.pointer+9);
                             
-                            if(this.apiPage === this.actualPageTotal){
+                            if(this.allMovies.length === this.responseTotal && this.modVal > 0){
                                 this.pointer = this.pointer + this.modVal;
                             } else {
                                 this.pointer = this.pointer + 9;
                             }
+                            console.log('Pointer: '+this.pointer);
                             this.headerText = 'Movies list';
                             this.firstScreen = false;
                             this.secondScreen = true;
@@ -322,12 +323,13 @@ export default class EasySearchMovie extends LightningElement {
         }
         this.handleScrollToTop();
         this.handleButtons();
-                
+        console.log('Pointer: '+this.pointer);    
         
     };
 
     //Pagination Prev button function.
     showPrevImages(){
+
         this.showSpinner = true;
         this.resetNext2Button();
         this.page = this.page -  1;
@@ -344,6 +346,7 @@ export default class EasySearchMovie extends LightningElement {
         
         this.handleScrollToTop();
         this.showSpinner = false;
+        console.log('Pointer: '+this.pointer);
     };
 
     resetNext2Button(){
