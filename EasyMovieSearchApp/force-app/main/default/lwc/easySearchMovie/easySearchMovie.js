@@ -73,6 +73,7 @@ export default class EasySearchMovie extends LightningElement {
         this.showBackLink = false;
         this.showError = false;
         this.firstScreenErrorMsg = '';
+        this.apiResponse = [];
     }
 
     //this method validate the search string, 
@@ -109,12 +110,17 @@ export default class EasySearchMovie extends LightningElement {
             
             if(result){
                 
-                if(JSON.parse(result).length ===1 )
-                    this.apiResponse.push(JSON.parse(result));
-                else    
+                if(JSON.parse(result).length )
                     this.apiResponse = JSON.parse(result);
+                else    
+                    this.apiResponse.push(JSON.parse(result));
                 
+                console.log('api:'+this.apiResponse);
                 this.searchKeywordFromMovies();
+                this.showSpinner = false;
+            } else {
+                this.showError = true;
+                this.firstScreenErrorMsg = 'No movie found.'
                 this.showSpinner = false;
             }
           })
